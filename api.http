@@ -1,0 +1,11 @@
+### יצירת משתמש חדש
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "email": "ori@example.com",
+  "name": "Ori"
+}
+
+### לקבלת כל המשתמשים
+GET http://localhost:3000/users
