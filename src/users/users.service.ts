@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { throwIfUniqueConstraint } from '../common/handle-prisma-error';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -8,9 +9,11 @@ export class UsersService {
 
   // 1. יצירת משתמש חדש
   async create(data: { email: string; name?: string }) {
-    return this.prisma.user.create({
-      data,
-    });
+    try {
+      return await this.prisma.user.create({ data });
+    } catch (error) {
+      throwIfUniqueConstraint(error);
+    }
   }
 
   // 2. שליפת כל המשתמשים
@@ -35,10 +38,11 @@ export class UsersService {
     // ודואג קודם שהמשתמש קיים
     await this.findOne(id);
 
-    return this.prisma.user.update({
-      where: { id },
-      data,
-    });
+    try {
+      return await this.prisma.user.update({ where: { id }, data });
+    } catch (error) {
+      throwIfUniqueConstraint(error);
+    }
   }
 
   // 5. מחיקת משתמש לפי ID
