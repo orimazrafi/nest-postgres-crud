@@ -41,4 +41,21 @@ export class SessionService {
   async delete(sessionId: string): Promise<void> {
     await this.redis.del(`${SESSION_KEY_PREFIX}${sessionId}`);
   }
+
+  /** Overwrites session user data in Redis while preserving the existing TTL. */
+  async refreshSession(
+    sessionId: string,
+    user: User | SessionUser,
+  ): Promise<void> {
+    const key = `${SESSION_KEY_PREFIX}${sessionId}`;
+    const remainingTtl = await this.redis.ttl(key);
+
+    if (remainingTtl <= 0) {
+      return;
+    }
+
+    const sessionUser = 'password' in user ? excludePassword(user) : user;
+
+    await this.redis.set(key, JSON.stringify(sessionUser), remainingTtl);
+  }
 }

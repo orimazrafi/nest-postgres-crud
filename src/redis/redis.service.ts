@@ -25,6 +25,11 @@ export class RedisService implements OnModuleDestroy {
     await this.client.del(key);
   }
 
+  /** Returns remaining TTL in seconds, or -2 if the key does not exist. */
+  async ttl(key: string): Promise<number> {
+    return this.client.ttl(key);
+  }
+
   async onModuleDestroy(): Promise<void> {
     await this.client.quit();
   }
