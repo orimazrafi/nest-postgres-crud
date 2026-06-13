@@ -1,41 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../prisma/prisma.service';
+import { excludePassword } from '../common/user.util';
+import { User } from '../generated/prisma/client';
+import { RedisService } from '../redis/redis.service';
 
-const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
+const SESSION_KEY_PREFIX = 'session:';
+
+export type SessionUser = Omit<User, 'password'>;
 
 @Injectable()
 export class SessionService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private redis: RedisService) {}
 
-  /** Creates a new session row valid for 7 days and returns its id. */
-  async create(userId: number): Promise<{ sessionId: string; expiresAt: Date }> {
-    const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  /** Stores session user data in Redis for 7 days and returns the session id. */
+  async create(user: User): Promise<{ sessionId: string; expiresAt: Date }> {
+    const sessionId = randomUUID();
+    const expiresAt = new Date(Date.now() + SESSION_TTL_SECONDS * 1000);
+    const sessionUser = excludePassword(user);
 
-    const session = await this.prisma.session.create({
-      data: {
-        id: randomUUID(),
-        userId,
-        expiresAt,
-      },
-    });
+    await this.redis.set(
+      `${SESSION_KEY_PREFIX}${sessionId}`,
+      JSON.stringify(sessionUser),
+      SESSION_TTL_SECONDS,
+    );
 
-    return { sessionId: session.id, expiresAt: session.expiresAt };
+    return { sessionId, expiresAt };
   }
 
-  /** Returns the session with user when the id exists and is not expired. */
-  async findValidSession(sessionId: string) {
-    return this.prisma.session.findFirst({
-      where: {
-        id: sessionId,
-        expiresAt: { gt: new Date() },
-      },
-      include: { user: true },
-    });
+  /** Returns cached user data when the session id exists in Redis. */
+  async findValidSession(sessionId: string): Promise<SessionUser | null> {
+    const raw = await this.redis.get(`${SESSION_KEY_PREFIX}${sessionId}`);
+    if (!raw) {
+      return null;
+    }
+    return JSON.parse(raw) as SessionUser;
   }
 
-  /** Deletes a session by id (logout). */
+  /** Removes a session from Redis (logout). */
   async delete(sessionId: string): Promise<void> {
-    await this.prisma.session.deleteMany({ where: { id: sessionId } });
+    await this.redis.del(`${SESSION_KEY_PREFIX}${sessionId}`);
   }
 }

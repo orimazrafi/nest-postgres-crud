@@ -27,6 +27,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    return this.sessionService.create(user.id);
+    return this.sessionService.create(user);
   }
 }

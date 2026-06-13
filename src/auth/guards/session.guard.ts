@@ -5,14 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { excludePassword } from '../../common/user.util';
 import { SessionService } from '../session.service';
 
 @Injectable()
 export class SessionGuard implements CanActivate {
   constructor(private sessionService: SessionService) {}
 
-  /** Validates the sid cookie against active sessions in the database. */
+  /** Validates the sid cookie against the session stored in Redis. */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     const sessionId = request.cookies?.sid as string | undefined;
@@ -21,13 +20,13 @@ export class SessionGuard implements CanActivate {
       throw new UnauthorizedException('Authentication required');
     }
 
-    const session = await this.sessionService.findValidSession(sessionId);
+    const user = await this.sessionService.findValidSession(sessionId);
 
-    if (!session) {
+    if (!user) {
       throw new UnauthorizedException('Session expired or invalid');
     }
 
-    request.user = excludePassword(session.user);
+    request.user = user;
     return true;
   }
 }
