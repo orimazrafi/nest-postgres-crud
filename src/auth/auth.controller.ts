@@ -9,6 +9,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -32,12 +33,14 @@ export class AuthController {
   ) {}
 
   /** Registers a new user with a hashed password. */
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('signup')
   signUp(@Body() signUpDto: SignUpDto) {
     return this.usersService.signUp(signUpDto);
   }
 
   /** Authenticates the user and sets an httpOnly session cookie. */
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(
