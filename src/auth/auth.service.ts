@@ -29,4 +29,11 @@ export class AuthService {
 
     return this.sessionService.create(user);
   }
+
+  /** Removes the session from Redis when present. */
+  async logout(sessionId: string | undefined): Promise<void> {
+    if (sessionId) {
+      await this.sessionService.delete(sessionId);
+    }
+  }
 }

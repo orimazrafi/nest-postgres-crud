@@ -1,4 +1,4 @@
-### הרשמה (Sign Up)
+### Sign up
 POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
@@ -8,7 +8,7 @@ Content-Type: application/json
   "password": "secret12"
 }
 
-### התחברות (Login) — שומר cookie sid
+### Login — saves sid cookie
 POST http://localhost:3000/auth/login
 Content-Type: application/json
 
@@ -17,5 +17,11 @@ Content-Type: application/json
   "password": "secret12"
 }
 
-### קבלת כל המשתמשים (דורש session cookie)
+### Current user (requires session cookie)
+GET http://localhost:3000/auth/me
+
+### Logout — clears Redis session and cookie
+POST http://localhost:3000/auth/logout
+
+### List users (requires session cookie)
 GET http://localhost:3000/users
