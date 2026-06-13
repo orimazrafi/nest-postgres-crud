@@ -1,11 +1,21 @@
-### יצירת משתמש חדש
-POST http://localhost:3000/users
+### הרשמה (Sign Up)
+POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
 {
   "email": "ori@example.com",
-  "name": "Ori"
+  "name": "Ori",
+  "password": "secret12"
 }
 
-### לקבלת כל המשתמשים
+### התחברות (Login) — שומר cookie sid
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "ori@example.com",
+  "password": "secret12"
+}
+
+### קבלת כל המשתמשים (דורש session cookie)
 GET http://localhost:3000/users
