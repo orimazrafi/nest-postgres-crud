@@ -1,3 +1,6 @@
+### Health check
+GET http://localhost:3000/health
+
 ### Sign up
 POST http://localhost:3000/auth/signup
 Content-Type: application/json

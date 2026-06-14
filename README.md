@@ -1,98 +1,147 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# nest-postgres-crud
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS API with PostgreSQL (Prisma 7), Redis sessions, cookie-based auth, and Docker support.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- **NestJS 11** — HTTP API
+- **Prisma 7** + **PostgreSQL** — user persistence
+- **Redis** — session storage (7-day TTL)
+- **bcrypt** — password hashing
+- **Jest + Supertest** — unit and E2E tests
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+- Node.js 22+
+- Docker (for Postgres and Redis)
+
+## Quick start
+
+### 1. Install dependencies
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+### 2. Environment
+
+Copy the example env file and adjust if needed:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+Required variables:
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `CORS_ORIGIN` | Comma-separated allowed origins (optional; has defaults) |
+
+The app validates required env vars at startup and exits if they are missing.
+
+### 3. Start infrastructure
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run docker:up
 ```
 
-## Deployment
+Starts Postgres and Redis via Docker Compose.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 4. Run migrations
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npx prisma migrate deploy
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 5. Start the app
 
-## Resources
+```bash
+npm run start:dev
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+API runs at `http://localhost:3000`.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Docker
 
-## Support
+| Command | Description |
+|---------|-------------|
+| `npm run docker:up` | Postgres + Redis |
+| `npm run docker:down` | Stop containers |
+| `npm run docker:app` | Full stack (app + Postgres + Redis) |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+When the app runs **inside Docker**, connection strings use service hostnames (`postgres`, `redis`). When it runs **on the host**, use `localhost` (see `.env.example`).
 
-## Stay in touch
+## API
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Health
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/health` | No | Checks Postgres and Redis; returns `503` if either is down |
+
+### Auth
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `POST` | `/auth/signup` | No | Register (rate limited) |
+| `POST` | `/auth/login` | No | Login; sets `sid` httpOnly cookie |
+| `POST` | `/auth/logout` | No | Clears session and cookie |
+| `GET` | `/auth/me` | Session | Current user |
+
+### Users (own account only)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/users/:id` | Session + owner | Get profile |
+| `PATCH` | `/users/:id` | Session + owner | Update profile; refreshes session |
+| `DELETE` | `/users/:id` | Session + owner | Delete account; clears session |
+
+Use `api.http` for manual requests (VS Code REST Client or similar).
+
+## Tests
+
+```bash
+# Unit tests (no Docker required)
+npm test
+
+# E2E tests (requires Postgres + Redis)
+npm run docker:up
+npx prisma migrate deploy
+npm run test:e2e
+
+# Both
+npm run test:all
+```
+
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run start:dev` | Dev server with hot reload |
+| `npm run build` | Production build |
+| `npm run start:prod` | Run compiled app |
+| `npm run prisma:generate` | Generate Prisma client |
+| `npm test` | Unit tests |
+| `npm run test:e2e` | E2E tests |
+| `npm run lint` | ESLint |
+
+## Project structure
+
+```
+src/
+  auth/          # Signup, login, logout, session guard
+  users/         # Profile CRUD (owner-only)
+  health/        # /health readiness checks
+  config/        # Env validation
+  prisma/        # Prisma service
+  redis/         # Redis service
+  common/        # Shared helpers
+prisma/          # Schema and migrations
+test/            # E2E tests and helpers
+```
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED — private project.

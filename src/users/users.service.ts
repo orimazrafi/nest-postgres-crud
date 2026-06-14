@@ -35,11 +35,6 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  async findAll() {
-    const users = await this.prisma.user.findMany();
-    return users.map(excludePassword);
-  }
-
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
