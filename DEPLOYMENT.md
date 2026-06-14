@@ -218,7 +218,69 @@ docker compose -f docker-compose.prod.yml down -v
 
 ---
 
-## Troubleshooting
+## Troubleshooting — cannot reach `http://151.145.93.169:3000/health`
+
+Connection **timeout** from the internet (not “connection refused”) almost always means **Oracle Cloud is blocking port 3000** before traffic reaches the VM.
+
+### Fix 1 — Open port 3000 in Oracle Cloud (required)
+
+1. Log in to [Oracle Cloud Console](https://cloud.oracle.com/).
+2. **Networking → Virtual cloud networks** → select your VCN.
+3. Click **Security Lists** → the security list attached to your subnet.
+4. **Add Ingress Rules**:
+   - Source CIDR: `0.0.0.0/0` (or your home IP for tighter security)
+   - IP Protocol: TCP
+   - Destination port range: `3000`
+   - Description: `Nest API`
+5. Save.
+
+If you use a **Network Security Group (NSG)** on the instance, add the same ingress rule there too.
+
+Also check **Instance → Attached VNICs → Subnet → Security List** — rules must allow TCP 3000 inbound.
+
+### Fix 2 — Verify the app on the server (SSH)
+
+Fix key permissions on Windows first:
+
+```powershell
+icacls C:\dev\ssh\ssh-key-2026-06-14.key /inheritance:r
+icacls C:\dev\ssh\ssh-key-2026-06-14.key /grant:r "$($env:USERNAME):(R)"
+ssh -i C:\dev\ssh\ssh-key-2026-06-14.key ubuntu@151.145.93.169
+```
+
+On the server:
+
+```bash
+cd /opt/nest-postgres-crud
+docker compose -f docker-compose.prod.yml ps
+curl http://127.0.0.1:3000/health
+sudo ufw status
+```
+
+| Local curl on server | From browser |
+|---------------------|--------------|
+| Works | Timeout → **OCI firewall** (Fix 1) |
+| Fails | App not running — check `docker compose logs app` |
+| Works after Fix 1 | Should work |
+
+Ensure `.env` has:
+
+```env
+APP_BIND=0.0.0.0
+APP_PORT=3000
+CORS_ORIGIN=http://151.145.93.169:3000
+POSTGRES_PASSWORD=your-strong-password
+```
+
+Then redeploy:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
+## Troubleshooting (general)
 
 | Problem | Check |
 |---------|--------|
