@@ -8,7 +8,7 @@ COMPOSE_FILE="docker-compose.prod.yml"
 HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3000/health}"
 
 echo "Pulling latest code..."
-git pull --ff-only origin "${DEPLOY_BRANCH:-main}"
+git pull --ff-only origin "${DEPLOY_BRANCH:-master}"
 
 echo "Building and starting containers..."
 docker compose -f "$COMPOSE_FILE" up -d --build

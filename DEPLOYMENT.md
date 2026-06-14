@@ -1,6 +1,6 @@
 # Deployment guide (Oracle Cloud free VM + Docker)
 
-This guide deploys the full stack (Postgres, Redis, Nest API) on a single Linux VPS using `docker-compose.prod.yml`. GitHub Actions runs tests on every push and deploys to the server when `main` passes CI.
+This guide deploys the full stack (Postgres, Redis, Nest API) on a single Linux VPS using `docker-compose.prod.yml`. GitHub Actions runs tests on every push and deploys to the server when `master` passes CI.
 
 ## Architecture
 
@@ -71,7 +71,7 @@ sudo ufw enable
 ```bash
 sudo mkdir -p /opt/nest-postgres-crud
 sudo chown "$USER:$USER" /opt/nest-postgres-crud
-git clone https://github.com/YOUR_USER/nest-postgres-crud.git /opt/nest-postgres-crud
+git clone https://github.com/orimazrafi/nest-postgres-crud.git /opt/nest-postgres-crud
 cd /opt/nest-postgres-crud
 ```
 
@@ -121,7 +121,7 @@ Expected:
 
 ### 1. Push your code to GitHub
 
-Ensure the repo is on GitHub and the default branch is `main`.
+Ensure the repo is on GitHub and the default branch is `master`.
 
 ### 2. Create a deploy SSH key
 
@@ -156,9 +156,9 @@ In GitHub: **Settings → Secrets and variables → Actions → New repository s
 | Workflow | Trigger | Action |
 |----------|---------|--------|
 | **CI** (`.github/workflows/ci.yml`) | Every push and PR | Lint, unit tests, E2E, `npm run build`, Docker build |
-| **Deploy** (`.github/workflows/deploy.yml`) | CI succeeds on `main` | SSH → `./scripts/deploy.sh` |
+| **Deploy** (`.github/workflows/deploy.yml`) | CI succeeds on `master` | SSH → `./scripts/deploy.sh` |
 
-After the first server setup, every push to `main` that passes CI redeploys automatically.
+After the first server setup, every push to `master` that passes CI redeploys automatically.
 
 ---
 
