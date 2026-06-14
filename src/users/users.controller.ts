@@ -11,17 +11,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { sessionCookieOptions } from '../auth/cookie.config';
 import { OwnerGuard } from '../auth/guards/owner.guard';
 import { SessionGuard } from '../auth/guards/session.guard';
 import { SessionService } from '../auth/session.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
-
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
-};
 
 @Controller('users')
 @UseGuards(SessionGuard)
@@ -70,7 +65,7 @@ export class UsersController {
     if (sessionId) {
       await this.sessionService.delete(sessionId);
     }
-    response.clearCookie('sid', cookieOptions);
+    response.clearCookie('sid', sessionCookieOptions());
 
     return deletedUser;
   }
