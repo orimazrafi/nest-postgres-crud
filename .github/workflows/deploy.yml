@@ -33,5 +33,6 @@ jobs:
             set -eu
             TARGET_DIR="${DEPLOY_PATH:-/opt/nest-postgres-crud}"
             cd "$TARGET_DIR"
-            chmod +x scripts/deploy.sh
-            ./scripts/deploy.sh
+            git fetch origin master
+            git reset --hard origin/master
+            sh scripts/deploy.sh
