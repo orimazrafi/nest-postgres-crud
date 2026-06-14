@@ -1,0 +1,7 @@
+# HTTPS reverse proxy for the Nest app.
+# Requires DOMAIN in .env and DNS pointing to this server.
+# Start with: docker compose -f docker-compose.prod.yml --profile proxy up -d
+
+{$DOMAIN} {
+	reverse_proxy app:3000
+}

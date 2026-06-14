@@ -25,7 +25,9 @@
     "test:all": "npm test && npm run test:e2e",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:app": "docker compose --profile app up --build"
+    "docker:app": "docker compose --profile app up --build",
+    "docker:prod": "docker compose -f docker-compose.prod.yml up -d --build",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml down"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

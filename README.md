@@ -70,8 +70,18 @@ API runs at `http://localhost:3000`.
 | `npm run docker:up` | Postgres + Redis |
 | `npm run docker:down` | Stop containers |
 | `npm run docker:app` | Full stack (app + Postgres + Redis) |
+| `npm run docker:prod` | Production compose on a VPS |
 
 When the app runs **inside Docker**, connection strings use service hostnames (`postgres`, `redis`). When it runs **on the host**, use `localhost` (see `.env.example`).
+
+### Production (VPS)
+
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for Oracle Cloud free VM setup, GitHub Actions CI/CD, HTTPS with Caddy, and React frontend notes.
+
+```bash
+cp .env.production.example .env   # on the server
+npm run docker:prod               # or ./scripts/deploy.sh
+```
 
 ## API
 
