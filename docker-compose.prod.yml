@@ -49,7 +49,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - '${APP_BIND:-0.0.0.0}:${APP_PORT:-3000}:3000'
+      - '127.0.0.1:${APP_PORT:-3000}:3000'
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -57,6 +57,18 @@ services:
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: ${CORS_ORIGIN:?Set CORS_ORIGIN in .env}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${WEB_PORT:-80}:80'
 
   caddy:
     profiles: ['proxy']

@@ -5,7 +5,7 @@ ROOT_DIR="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
 COMPOSE_FILE="docker-compose.prod.yml"
-HEALTH_URL="${HEALTH_URL:-http://127.0.0.1:3000/health}"
+HEALTH_URL="${HEALTH_URL:-http://127.0.0.1/health}"
 
 echo "Pulling latest code..."
 BRANCH="${DEPLOY_BRANCH:-master}"
