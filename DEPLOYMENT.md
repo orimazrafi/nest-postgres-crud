@@ -238,7 +238,23 @@ If you use a **Network Security Group (NSG)** on the instance, add the same ingr
 
 Also check **Instance → Attached VNICs → Subnet → Security List** — rules must allow TCP 3000 inbound.
 
-### Fix 2 — Verify the app on the server (SSH)
+### Fix 2 — Open port 3000 in the VM iptables (Oracle Ubuntu images)
+
+Oracle Ubuntu images ship with **iptables** rules that only allow **SSH (22)** for new inbound connections. UFW may be inactive; the active rules live in `/etc/iptables/rules.v4`.
+
+On the server:
+
+```bash
+sudo iptables -I INPUT 4 -p tcp --dport 3000 -j ACCEPT
+sudo iptables-save | sudo tee /etc/iptables/rules.v4 > /dev/null
+sudo iptables -L INPUT -n --line-numbers | head -8
+```
+
+You should see a `tcp dpt:3000` ACCEPT rule **before** the final REJECT line.
+
+`scripts/server-bootstrap.sh` applies this automatically on new VMs.
+
+### Fix 3 — Verify the app on the server (SSH)
 
 Fix key permissions on Windows first:
 
@@ -254,14 +270,16 @@ On the server:
 cd /opt/nest-postgres-crud
 docker compose -f docker-compose.prod.yml ps
 curl http://127.0.0.1:3000/health
-sudo ufw status
+sudo iptables -L INPUT -n --line-numbers | head -8
 ```
 
 | Local curl on server | From browser |
 |---------------------|--------------|
-| Works | Timeout → **OCI firewall** (Fix 1) |
+| Works | Timeout → **OCI Security List/NSG** (Fix 1) and/or **VM iptables** (Fix 2) |
 | Fails | App not running — check `docker compose logs app` |
-| Works after Fix 1 | Should work |
+| Works after Fix 1 + 2 | Should show JSON: `{"status":"ok",...}` |
+
+Use the full URL in the browser: `http://151.145.93.169:3000/health` (include `http://`).
 
 Ensure `.env` has:
 

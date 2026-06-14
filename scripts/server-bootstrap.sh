@@ -20,11 +20,18 @@ sudo systemctl start docker
 echo "==> Adding ubuntu user to docker group..."
 sudo usermod -aG docker ubuntu
 
-echo "==> Configuring UFW firewall..."
-sudo apt install -y ufw
-sudo ufw allow OpenSSH
-sudo ufw allow 3000/tcp comment 'Nest API'
-sudo ufw --force enable
+echo "==> Opening port 3000 (Oracle images use iptables, not only UFW)..."
+if [ -f /etc/iptables/rules.v4 ]; then
+  if ! sudo iptables -C INPUT -p tcp --dport 3000 -j ACCEPT 2>/dev/null; then
+    sudo iptables -I INPUT 4 -p tcp --dport 3000 -j ACCEPT
+    sudo iptables-save | sudo tee /etc/iptables/rules.v4 > /dev/null
+  fi
+else
+  sudo apt install -y ufw
+  sudo ufw allow OpenSSH
+  sudo ufw allow 3000/tcp comment 'Nest API'
+  sudo ufw --force enable
+fi
 
 echo "==> Docker version:"
 docker --version
